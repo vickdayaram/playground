@@ -1,22 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import styles from './App.module.scss';
-import { AutoComplete } from 'antd';
+import { Input } from 'antd';
 import { BehaviorSubject } from 'rxjs';
+import { filter, debounceTime, switchMap } from 'rxjs/operators';
+import { OptionData } from 'rc-select/lib/interface';
 
 const subject$ = new BehaviorSubject('');
 
 export const App = () => {
 
   const [selected, setSelected] = useState('');
-  const [options, setOptions] = useState<string[]>([]);
+  const [options, setOptions] = useState<OptionData[]>([]);
+  const [loading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const subscription = subject$.pipe(
+      // Stream that I want
+      filter((text) => text.length > 2),
+      debounceTime(750),
+      switchMap(searchQuery => {
+        setIsLoading(true);
+        return fetchResults(searchQuery);
+      }))
+      // This is the forEach, consuming the stream
+      .subscribe(data => {
+        const searchResults = data.query.search.map((result: any) => ({ ...result, value: result.title }));;
+        setOptions(searchResults);
+        setIsLoading(false);
+      });
+    return () => subscription.unsubscribe();
+  }, [])
 
   const fetchResults = (searchQuery: string) => {
     const endpoint = `https://en.wikipedia.org/w/api.php?action=query&list=search&prop=info&inprop=url&utf8=&format=json&origin=*&srlimit=20&srsearch=${searchQuery}`;
-    fetch(endpoint)
+    return fetch(endpoint)
       .then(response => response.json())
-      .then(data => {
-        console.log(data);
-      })
+      .then(data => data)
       .catch(() => console.log('An error occurred'));
   }
 
@@ -24,34 +43,21 @@ export const App = () => {
     console.log('nothing');
   }
 
-  const onSearch = (e: any) => {
-    const query = e.target.value;
-    if (query.length > 2) {
-      subject$.next(query);
-    }
-    setSelected(query);
-    console.log('nothing also');
+  const onSearch = (event: any) => {
+    const query = event.target.value;
+    subject$.next(query);
   }
-
-  useEffect(() => {
-    const subscription = subject$.subscribe(
-      values => {
-        setOptions([values]);
-      },
-      error => { console.log(error) }
-    );
-    return () => subscription.unsubscribe();
-  }, [])
 
   return (
     <div className={styles.app}>
-      <AutoComplete
-        options={[]}
+      <Input
         style={{ width: 200 }}
-        onSelect={onSelect}
-        onSearch={onSearch}
+        onChange={onSearch}
         placeholder="input here"
       />
+      <div>
+        {options.map(option => <div> {option.title} </div>)}
+      </div>
     </div>
   );
 };
