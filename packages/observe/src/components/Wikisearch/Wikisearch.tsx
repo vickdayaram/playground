@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './Wikisearch.module.scss';
 import { Input } from 'antd';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, debounceTime, switchMap } from 'rxjs/operators';
 import { OptionData } from 'rc-select/lib/interface';
-
-const subject$ = new BehaviorSubject('');
+import { useRx } from '../../hooks/rxjs';
 
 export const Wikisearch = () => {
 
@@ -13,8 +12,8 @@ export const Wikisearch = () => {
     const [options, setOptions] = useState<OptionData[]>([]);
     const [loading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-        const subscription = subject$.pipe(
+    const setUpStream = (o: Observable<any>) => {
+        return o.pipe(
             // Stream that I want
             filter((text) => text.length > 2),
             debounceTime(750),
@@ -28,8 +27,8 @@ export const Wikisearch = () => {
                 setOptions(searchResults);
                 setIsLoading(false);
             });
-        return () => subscription.unsubscribe();
-    }, [])
+    }
+    const subject = useRx(setUpStream, '')
 
     const fetchResults = (searchQuery: string) => {
         const endpoint = `https://en.wikipedia.org/w/api.php?action=query&list=search&prop=info&inprop=url&utf8=&format=json&origin=*&srlimit=20&srsearch=${searchQuery}`;
@@ -39,13 +38,9 @@ export const Wikisearch = () => {
             .catch(() => console.log('An error occurred'));
     }
 
-    const onSelect = () => {
-        console.log('nothing');
-    }
-
     const onSearch = (event: any) => {
         const query = event.target.value;
-        subject$.next(query);
+        subject.next(query);
     }
 
     return (
@@ -61,3 +56,5 @@ export const Wikisearch = () => {
         </div>
     );
 };
+
+
