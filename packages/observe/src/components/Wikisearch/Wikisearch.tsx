@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import styles from './App.module.scss';
+import styles from './Wikisearch.module.scss';
 import { Input } from 'antd';
 import { BehaviorSubject } from 'rxjs';
 import { filter, debounceTime, switchMap } from 'rxjs/operators';
