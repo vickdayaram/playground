@@ -5,6 +5,7 @@
     "lerna": "^3.22.1"
   },
   "dependencies": {
-    "nodesass": "^0.0.2-security"
+    "nodesass": "^0.0.2-security",
+    "plop": "^2.7.3"
   }
 }
