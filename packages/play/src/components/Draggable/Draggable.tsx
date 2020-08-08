@@ -6,6 +6,7 @@ import { filter, debounceTime, switchMap } from 'rxjs/operators';
 import { OptionData } from 'rc-select/lib/interface';
 import { useRx } from '../../hooks/rxjs';
 import { Button } from 'antd';
+import { DragDiv } from './DragDiv/DragDiv';
 
 type DragItem = {
   name: string,
@@ -20,9 +21,6 @@ type Pos = {
 export const Draggable = () => {
 
   const [dragItems, setDragItems] = useState(resetDragItems());
-  const handleMouseDown = (event: any) => {
-
-  };
 
   const handleReset = () => {
     setDragItems(resetDragItems());
@@ -36,17 +34,13 @@ export const Draggable = () => {
       </div>
       <div className={styles.draggableWindow} id={"draggableWindow"}>
         {dragItems.map(({ name, color, x, y }) => (
-          <div
-            onMouseDown={handleMouseDown}
-            className={styles.dragItem}
+          <DragDiv
             key={name}
-            style={{
-              backgroundColor: color,
-              left: `${x}px`,
-              top: `${y}px`
-            }}>
-            {name}
-          </div>
+            name={name}
+            color={color}
+            x={x}
+            y={y}
+          />
         ))}
       </div>
     </div>

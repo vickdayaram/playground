@@ -1,0 +1,11 @@
+.dragItem {
+  height: 100px;
+  width: 100px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: -webkit-grab;
+  position: absolute;
+}
